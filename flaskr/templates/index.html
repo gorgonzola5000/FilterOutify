@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Spotify Autoplaylist</title>
+  </head>
+  <body>
+    <header>
+      {% if session['logged_in'] %}
+      <div class="user-info">
+          <img src="path_to_placeholder_image" alt="User photo">
+          <p>{{ session['username'] }}</p>
+          <button onclick="location.href='/logout'">Logout</button>
+      </div>
+      {% else %}
+      <div class="user-info">
+          <p>Not logged in</p>
+          <button onclick="location.href='/login'">Login</button>
+      </div>
+      {% endif %}
+      <h1><a href="/">Spotify Autoplaylist</a></h1>
+      <nav>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="#">{[error]}</a></li>
+          <li><a href="/login">Login</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <h2>About this app</h2>
+      <p>Select one of your playlists and create a new one with all of the specified:</p>
+      <ul>
+        <li>Genres</li>
+        <li>Artists</li>
+        <li>Albums</li>
+      </ul>
+      <p>Filtered out!</p>
+    </main>
+    <footer>
+      <p>Spotify Autoplaylist by gorgonzola5000</p>
+    </footer>
+  </body>
+</html>
