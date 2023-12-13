@@ -1,0 +1,22 @@
+{% extends "default.html" %}
+{% block title %}About this app{% endblock %}
+
+{% block content %}
+<div class="grid-container">
+    {% for playlist in playlists %}
+    {% if playlist['public'] == true %}
+        <a href="{{ url_for('playlist', playlist_id=playlist['id']) }}">
+            <div class="playlist">
+                {% if playlist['images'][0] %}
+                <img src="{{ playlist['images'][0]['url'] }}" alt="{{ playlist['name'] }} Cover">
+                {% else %}
+                <img src="{{ url_for('static', filename='default_playlist_image.jpg') }}" alt="Default playlist cover">
+                {% endif %}
+                <h2>{{ playlist['name'] }}</h2>
+                <p id="tracks-number">{{ playlist['tracks']['total'] }} tracks</p>
+            </div>
+        </a>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}

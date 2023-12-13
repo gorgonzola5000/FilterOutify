@@ -16,4 +16,4 @@ instance/
 .env.local
 .env.*.local
 .env.*.local.*
-spotify_autoplaylist_env/
+.venv

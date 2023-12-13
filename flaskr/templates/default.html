@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Spotify Autoplaylist - {% block title %}{% endblock %}</title>
+  </head>
+  <body>
+    <header>
+        <div class="header-top">
+            <div class="user-info">
+                {% if profile %}
+                    {% if profile.images and profile.images[1] %}
+                        <img src="{{ profile.images[1].url }}" alt="User photo" width="75" height="75", id="avatar">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='default_avatar.jpg') }}" alt="Default user photo" width="75" height="75", id="avatar">
+                    {% endif %}
+                    <div id="user-details">
+                        <p id="username">{{ profile.display_name }}</p>
+                        <button onclick="location.href='/logout'">Logout</button>
+                    </div>
+                {% else %}
+                    <div id="user-details">
+                        <p>Not logged in</p>
+                        <button onclick="location.href='/login'">Login</button>
+                    </div>
+                {% endif %}
+            </div>
+            <h1><a href="/">Spotify Autoplaylist</a></h1>
+        </div>
+      <nav>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/about">About</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+    {% block content %}{% endblock %}
+    </main>
+    <footer>
+      <p>Spotify Autoplaylist by <a href="https://github.com/gorgonzola5000">gorgonzola5000</a></p>
+    </footer>
+  </body>
+</html>

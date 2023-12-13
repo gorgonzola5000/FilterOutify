@@ -1,0 +1,12 @@
+{% extends "default.html" %}
+{% block title %}About this app{% endblock %}
+
+{% block content %}
+<p>No AutoPlaylist playlist found for this playlist</p>
+<p>This program can only change the contents for its playlists</p>
+<p>This means that AutoPlaylist needs to create a new one</p>
+<p>Proceed?</p>
+<form action="{{ url_for('create_playlist', user_playlist_id=user_playlist_id) }}" method="post">
+    <button type="submit">Proceed!</button>
+</form>
+{% endblock %}

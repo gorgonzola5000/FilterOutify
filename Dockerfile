@@ -1,14 +1,5 @@
-FROM python:3.9-slim-buster
 
-WORKDIR /app
-
-COPY requirements.txt .
-
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-CMD [ "python", "./app.py" ]
+# Use an official Python runtime as a parent image
 FROM python:3.9-slim-buster
 
 # Set the working directory to /app
@@ -21,10 +12,11 @@ COPY . /app
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
 # Make port 80 available to the world outside this container
-EXPOSE 80
+EXPOSE 5000
 
 # Define environment variable
 ENV NAME World
 
-# Run main.py when the container launches
-CMD ["python", "flask run"]
+# Run the app when the container launches
+
+CMD ["flask", "--app", "flaskr", "run", "--debug", "--host=0.0.0.0"]
