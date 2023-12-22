@@ -2,5 +2,7 @@
 {% block title %}About this app{% endblock %}
 
 {% block content %}
-<p>Current tracks: {{tracks_user['total']}}</p>
+{% for id, track in tracks.items() %}
+<p>{{track['name']}}</p>
+{% endfor %}
 {% endblock %}
