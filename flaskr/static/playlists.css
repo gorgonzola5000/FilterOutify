@@ -1,0 +1,31 @@
+.playlist img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.playlist a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.grid-container a {
+    border-radius: 10px;
+    background-color: #181818;
+    text-align: left;
+    padding: 10px;
+    text-decoration: none;
+}
+
+#tracks-number {
+    color: #a7a7a7;
+}

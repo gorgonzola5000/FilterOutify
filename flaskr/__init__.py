@@ -1,12 +1,10 @@
 import base64
-from flask import Flask, url_for, render_template, request, redirect, session, jsonify
+from flask import Flask, url_for, render_template, request, redirect, session
 import urllib.parse
 import secrets
 import requests
 import dotenv
-import regex as re
-import json
-from flaskr.autoplaylist_utils import get_playlists, get_tracks, create_playlist, get_user_id
+from . import autoplaylist_utils
 
 app = Flask(__name__)
 app.debug = True
@@ -81,7 +79,7 @@ def callback():
         if response.status_code == 200:
             # Save the authorization token in the session
             session['authorization_token'] = response_json['access_token']
-            get_user_id()
+            autoplaylist_utils.get_user_id()
             return redirect(url_for('index'))
         else:
             error = urllib.parse.urlencode({'error': f'response.status_code'})
@@ -100,20 +98,32 @@ def about():
 
 @app.route('/playlists')
 def playlists():
-    get_playlists()
+    autoplaylist_utils.get_playlists()
     user_playlists = session['user_playlists']
     return render_template('playlists.html', playlists=user_playlists)
 
 @app.route('/playlists/<playlist_id>', methods=['GET', 'POST'])
 def playlist(playlist_id):
-    playlist_info = session['user_playlists'][playlist_id]
-
     if request.method == 'POST':
-        create_playlist(playlist_id)
+        autoplaylist_utils.create_playlist(playlist_id)
         return redirect(url_for('playlist', playlist_id=playlist_id))
     else:
+        playlist_info = session['user_playlists'][playlist_id]
+        ap_playlist_id = playlist_info['ap_id']
         if playlist_info['ap_id'] == None:
             return render_template('playlist_no_ap_found.html', playlist_id=playlist_id)
         else:
-            tracks = get_tracks(playlist_id)
-            return render_template('playlist.html', tracks=tracks)
+            tracks = autoplaylist_utils.get_tracks(ap_playlist_id)
+            artist_set = list(set(track['artist'] for track in tracks.values()))
+            artist_set.sort()
+            return render_template('playlist.html', playlist_info=playlist_info, tracks=tracks, playlist_id=playlist_id, ap_playlist_id=ap_playlist_id, artists=artist_set)
+        
+@app.route('/playlists/<playlist_id>/filter', methods=['POST'])
+def filter(playlist_id):
+    criteria = request.form.get('artist')
+    tracks_to_be_filtered_out = autoplaylist_utils.filter_tracks(playlist_id, criteria)
+    autoplaylist_utils.remove_tracks_from_ap_playlist(playlist_id, tracks_to_be_filtered_out)
+    return redirect(url_for('playlist', playlist_id=playlist_id))
+    
+if __name__ == '__main__':
+    app.run()

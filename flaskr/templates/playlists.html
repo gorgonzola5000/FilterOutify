@@ -1,5 +1,7 @@
 {% extends "default.html" %}
-{% block title %}About this app{% endblock %}
+
+{% block head %}<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='playlists.css') }}">{% endblock %}
+{% block title %}Your playlists{% endblock %}
 
 {% block content %}
 <div class="grid-container">

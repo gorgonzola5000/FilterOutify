@@ -62,21 +62,26 @@ def get_playlists():
 def get_tracks(playlist_id):
     headers = {
         'Authorization': f'Bearer {session["authorization_token"]}'
-        # add limit 50
+    }
+    data = {
+        'offset': 0,
+        'limit': 50
     }
     tracks_dict = {}
     while True: # do
-        tracks_temp = requests.get(f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks', headers=headers)
+        tracks_temp = requests.get(f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks', headers = headers, params = data)
         tracks_temp_json = tracks_temp.json()
         for item in tracks_temp_json['items']:
             temp_dict = {
                 "name": item['track']['name'],
                 "artist": item['track']['artists'][0]['name'],
                 "album": item['track']['album']['name'],
-                "image": item['track']['album']['images'][0]['url']
+                "image": item['track']['album']['images'][0]['url'],
+                "uri": item['track']['uri']
                 # "genres": item['track']['artists'][0]['genres']
             }
             tracks_dict[item['track']['id']] = temp_dict
+        data['offset'] += 50
         time.sleep(2)
         if tracks_temp_json['next'] == None: # while tracks_temp['next'] != None, so while there are more pages of tracks
             break
@@ -97,6 +102,7 @@ def create_playlist(playlist_id):
 
         session['user_playlists'][playlist_id]['ap_id'] = response_json['id']
         session.modified = True
+        clone_playlist(playlist_id)
 
 def get_user_id():
     if 'authorization_token' in session:
@@ -111,3 +117,39 @@ def get_user_id():
         else:
             return {}
     return {}
+
+def filter_tracks(playlist_id, criteria):
+    tracks = get_tracks(playlist_id)
+    tracks_to_be_filtered_out = []
+    for track_id in tracks:
+        track = tracks[track_id]
+        if criteria in track['artist']:
+            tracks_to_be_filtered_out.append(track['uri'])
+    return tracks_to_be_filtered_out
+
+def remove_tracks_from_ap_playlist(playlist_id, tracks_to_be_filtered_out):
+    ap_playlist_id = session['user_playlists'][playlist_id]['ap_id']
+    for i in range(0, len(tracks_to_be_filtered_out), 100):
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {session["authorization_token"]}'
+        }
+        data = {
+            'tracks': [{'uri': uri} for uri in tracks_to_be_filtered_out[i:i+100]]
+        }
+        response = requests.delete(f'https://api.spotify.com/v1/playlists/{ap_playlist_id}/tracks', headers=headers, data=json.dumps(data))
+
+def clone_playlist(playlist_id):
+    ap_playlist_id = session['user_playlists'][playlist_id]['ap_id']
+    tracks = get_tracks(playlist_id)
+    track_uris = [track['uri'] for track in tracks.values()]
+
+    for i in range(0, len(track_uris), 100):
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {session["authorization_token"]}'
+        }
+        data = {
+            'uris': track_uris[i:i+100]
+        }
+        response = requests.post(f'https://api.spotify.com/v1/playlists/{ap_playlist_id}/tracks', headers=headers, data=json.dumps(data))

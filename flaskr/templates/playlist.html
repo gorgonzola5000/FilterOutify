@@ -1,8 +1,30 @@
 {% extends "default.html" %}
-{% block title %}About this app{% endblock %}
+
+{% block head %}<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='playlist.css') }}">{% endblock %}
+{% block title %}Filtering {{playlist_info['name']}}{% endblock %}
+
 
 {% block content %}
+
+<a href="https://open.spotify.com/playlist/{{ap_playlist_id}}" target="_blank">
+    <button class="play-button">
+        <span class="material-icons-outlined">play_arrow</span>
+    </button>
+</a>
+
+<form action="/playlists/{{playlist_id}}/filter" method="post">
+    <label for="artist">Artist:</label>
+    <select id="artist" name="artist">
+        {% for artist in artists %}
+            <option value="{{artist}}">{{artist}}</option>
+        {% endfor %}
+    </select>
+    <input type="submit" value="Filter">
+</form>
+
 {% for id, track in tracks.items() %}
-<p>{{track['name']}}</p>
+<div class="track">
+    <p>{{track['name']}} - {{track['artist']}}</p>
+</div>
 {% endfor %}
 {% endblock %}
