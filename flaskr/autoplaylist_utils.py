@@ -2,51 +2,48 @@ import requests
 from flask import session
 import time
 import json
+from .TokenExpiredError import TokenExpiredError
 
 def get_playlists():
     headers = {
-                'Authorization': f'Bearer {session["authorization_token"]}'
-            }
-    try:
-        response = requests.get('https://api.spotify.com/v1/me/playlists', headers=headers)
-        response.raise_for_status()  # Raises a HTTPError if the status is 4xx, 5xx
-    except requests.exceptions.HTTPError as err:
-        print(f'HTTP error occurred: {err}')  # or handle the error in a way that's appropriate for your application
-    else:
-        response_json = response.json()  # get the first page of playlists of the user
+    'Authorization': f'Bearer {session["authorization_token"]}'
+    }
+    url = 'https://api.spotify.com/v1/me/playlists'
     playlists_dict = {}
-    for item in response_json['items']:
-        if item['images']:
-            temp_dict = {
-                "name": item['name'],
-                "ap_id": None,
-                "public": item['public'],
-                "image": item['images'][0]['url'],
-                "tracks_total": item['tracks']['total']
-                }
-        else:
-            temp_dict = {
-                "name": item['name'],
-                "ap_id": None,
-                "public": item['public'],
-                "image": None,
-                "tracks_total": item['tracks']['total']
-                }
-        playlists_dict[item['id']] = temp_dict
 
-    while response_json['next'] != None: # get the rest of the pages of playlists of the user
-        time.sleep(2)
-        response = requests.get(response_json['next'], headers=headers)
-        response_json = response.json()
+    while True:
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()  # Raises a HTTPError if the status is 4xx, 5xx
+        except requests.exceptions.HTTPError as err:
+            if err.response.status_code == 401:
+                raise TokenExpiredError()
+            else:
+                raise
+        response_json = response.json()  # get the page of playlists of the user
         for item in response_json['items']:
-            temp_dict = {
-                "name": item['name'],
-                "ap_id": None,
-                "public": item['public'],
-                "image": item['images'][0]['url'],
-                "tracks_total": item['tracks']['total']
-            }
+            if item['images']:
+                temp_dict = {
+                    "name": item['name'],
+                    "ap_id": None,
+                    "public": item['public'],
+                    "image": item['images'][0]['url'],
+                    "tracks_total": item['tracks']['total']
+                }
+            else:
+                temp_dict = {
+                    "name": item['name'],
+                    "ap_id": None,
+                    "public": item['public'],
+                    "image": None,
+                    "tracks_total": item['tracks']['total']
+                }
             playlists_dict[item['id']] = temp_dict
+
+        url = response_json['next']
+        if url is None:  # if there is no next page, break the loop
+            break
+        time.sleep(2)  # sleep for 2 seconds before the next request
 
     session['user_playlists'] = playlists_dict
 
@@ -69,7 +66,14 @@ def get_tracks(playlist_id):
     }
     tracks_dict = {}
     while True: # do
-        tracks_temp = requests.get(f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks', headers = headers, params = data)
+        try:
+            tracks_temp = requests.get(f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks', headers = headers, params = data)
+            tracks_temp.raise_for_status()  # Raises a HTTPError if the status is 4xx, 5xx
+        except requests.exceptions.HTTPError as err:
+            if err.response.status_code == 401:
+                raise TokenExpiredError()
+            else:
+                raise
         tracks_temp_json = tracks_temp.json()
         for item in tracks_temp_json['items']:
             temp_dict = {
@@ -96,27 +100,38 @@ def create_playlist(playlist_id):
         'name': f"{session['user_playlists'][playlist_id]['name']} AP",
         'public': False
     }
-    response = requests.post(f'https://api.spotify.com/v1/users/{session["user_id"]}/playlists', headers=headers, data=json.dumps(data))
-    if response.status_code == 201:
-        response_json = response.json()
+    try:
+        response = requests.post(f'https://api.spotify.com/v1/users/{session["user_id"]}/playlists', headers=headers, data=json.dumps(data))
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        if err.response.status_code == 401:
+            raise TokenExpiredError()
+        else:
+            raise
+    response_json = response.json()
 
-        session['user_playlists'][playlist_id]['ap_id'] = response_json['id']
-        session.modified = True
-        clone_playlist(playlist_id)
+    session['user_playlists'][playlist_id]['ap_id'] = response_json['id']
+    session.modified = True
+    clone_playlist(playlist_id)
 
 def get_user_id():
     if 'authorization_token' in session:
         headers = {
             'Authorization': f'Bearer {session["authorization_token"]}'
         }
-        response = requests.get('https://api.spotify.com/v1/me', headers=headers)
-        if response.status_code == 200:
-            response_json = response.json()
-            session['user_id'] = response_json['id']
-            return {'profile': response_json}
-        else:
-            return {}
-    return {}
+        try:
+            response = requests.get('https://api.spotify.com/v1/me', headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as err:
+            if err.response.status_code == 401:
+                raise TokenExpiredError()
+            else:
+                raise
+        response_json = response.json()
+        session['user_id'] = response_json['id']
+        return {'profile': response_json}
+    else:
+        return {}
 
 def filter_tracks(playlist_id, criteria):
     tracks = get_tracks(playlist_id)
@@ -137,7 +152,13 @@ def remove_tracks_from_ap_playlist(playlist_id, tracks_to_be_filtered_out):
         data = {
             'tracks': [{'uri': uri} for uri in tracks_to_be_filtered_out[i:i+100]]
         }
-        response = requests.delete(f'https://api.spotify.com/v1/playlists/{ap_playlist_id}/tracks', headers=headers, data=json.dumps(data))
+        try:
+            requests.delete(f'https://api.spotify.com/v1/playlists/{ap_playlist_id}/tracks', headers=headers, data=json.dumps(data))
+        except requests.exceptions.HTTPError as err:
+            if err.response.status_code == 401:
+                raise TokenExpiredError()
+            else:
+                raise
 
 def clone_playlist(playlist_id):
     ap_playlist_id = session['user_playlists'][playlist_id]['ap_id']
@@ -152,4 +173,11 @@ def clone_playlist(playlist_id):
         data = {
             'uris': track_uris[i:i+100]
         }
-        response = requests.post(f'https://api.spotify.com/v1/playlists/{ap_playlist_id}/tracks', headers=headers, data=json.dumps(data))
+        try:
+            response = requests.post(f'https://api.spotify.com/v1/playlists/{ap_playlist_id}/tracks', headers=headers, data=json.dumps(data))
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as err:
+            if err.response.status_code == 401:
+                raise TokenExpiredError()
+            else:
+                raise

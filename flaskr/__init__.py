@@ -5,6 +5,7 @@ import secrets
 import requests
 import dotenv
 from . import autoplaylist_utils
+from .TokenExpiredError import TokenExpiredError
 
 app = Flask(__name__)
 app.debug = True
@@ -98,14 +99,22 @@ def about():
 
 @app.route('/playlists')
 def playlists():
-    autoplaylist_utils.get_playlists()
+    try:
+        autoplaylist_utils.get_playlists()
+    except TokenExpiredError:
+        session.clear()
+        return redirect(url_for('login'))
     user_playlists = session['user_playlists']
     return render_template('playlists.html', playlists=user_playlists)
 
 @app.route('/playlists/<playlist_id>', methods=['GET', 'POST'])
 def playlist(playlist_id):
     if request.method == 'POST':
-        autoplaylist_utils.create_playlist(playlist_id)
+        try:
+            autoplaylist_utils.create_playlist(playlist_id)
+        except TokenExpiredError:
+            session.clear()
+            return redirect(url_for('login'))
         return redirect(url_for('playlist', playlist_id=playlist_id))
     else:
         playlist_info = session['user_playlists'][playlist_id]
@@ -113,16 +122,33 @@ def playlist(playlist_id):
         if playlist_info['ap_id'] == None:
             return render_template('playlist_no_ap_found.html', playlist_id=playlist_id)
         else:
-            tracks = autoplaylist_utils.get_tracks(ap_playlist_id)
+            try:
+                tracks = autoplaylist_utils.get_tracks(ap_playlist_id)
+            except TokenExpiredError:
+                session.clear()
+                return redirect(url_for('login'))
             artist_set = list(set(track['artist'] for track in tracks.values()))
             artist_set.sort()
             return render_template('playlist.html', playlist_info=playlist_info, tracks=tracks, playlist_id=playlist_id, ap_playlist_id=ap_playlist_id, artists=artist_set)
         
 @app.route('/playlists/<playlist_id>/filter', methods=['POST'])
 def filter(playlist_id):
-    criteria = request.form.get('artist')
-    tracks_to_be_filtered_out = autoplaylist_utils.filter_tracks(playlist_id, criteria)
-    autoplaylist_utils.remove_tracks_from_ap_playlist(playlist_id, tracks_to_be_filtered_out)
+    try:
+        criteria = request.form.get('artist')
+        tracks_to_be_filtered_out = autoplaylist_utils.filter_tracks(playlist_id, criteria)
+        autoplaylist_utils.remove_tracks_from_ap_playlist(playlist_id, tracks_to_be_filtered_out)
+    except TokenExpiredError:
+        session.clear()
+        return redirect(url_for('login'))
+    return redirect(url_for('playlist', playlist_id=playlist_id))
+
+@app.route('/playlists/<playlist_id>/reset', methods=['PUT'])
+def reset(playlist_id):
+    try:
+        autoplaylist_utils.reset_playlist(playlist_id)
+    except TokenExpiredError:
+        session.clear()
+        return redirect(url_for('login'))
     return redirect(url_for('playlist', playlist_id=playlist_id))
     
 if __name__ == '__main__':
