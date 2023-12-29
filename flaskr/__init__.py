@@ -89,9 +89,6 @@ def callback():
             session['authorization_token'] = response_json['access_token']
             autoplaylist_utils.get_user_id()
             return redirect(url_for('index'))
-        else:
-            error = urllib.parse.urlencode({'error': f'response.status_code'})
-            return redirect(f'/?{error}')
 
 @app.route('/')
 def index():

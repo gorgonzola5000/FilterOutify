@@ -18,9 +18,4 @@ EXPOSE 80
 ENV NAME World
 
 # Run the app when the container launches
-
-# RUN chmod +x /app/gunicorn_config.py
-
 CMD ["gunicorn", "-c", "gunicorn_config.py", "flaskr:app"]
-
-# CMD ["flask", "--app", "flaskr", "run", "--debug", "--host=0.0.0.0"]
