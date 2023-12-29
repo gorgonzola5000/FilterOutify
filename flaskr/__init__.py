@@ -6,14 +6,21 @@ import requests
 import dotenv
 from . import autoplaylist_utils
 from .TokenExpiredError import TokenExpiredError
+import os
 
 app = Flask(__name__)
 app.debug = True
-app.secret_key = dotenv.get_key(dotenv.find_dotenv(), 'SECRET_KEY')
+# app.secret_key = dotenv.get_key(dotenv.find_dotenv(), 'SECRET_KEY')
 
-client_id = dotenv.get_key(dotenv.find_dotenv(), 'CLIENT_ID')
-client_secret = dotenv.get_key(dotenv.find_dotenv(), 'CLIENT_SECRET')
-redirect_uri = dotenv.get_key(dotenv.find_dotenv(), 'REDIRECT_URI')
+# client_id = dotenv.get_key(dotenv.find_dotenv(), 'CLIENT_ID')
+# client_secret = dotenv.get_key(dotenv.find_dotenv(), 'CLIENT_SECRET')
+# redirect_uri = dotenv.get_key(dotenv.find_dotenv(), 'REDIRECT_URI')
+
+app.secret_key = os.environ['SECRET_KEY']
+
+client_id = os.environ['CLIENT_ID']
+client_secret = os.environ['CLIENT_SECRET']
+redirect_uri = os.environ['REDIRECT_URI']
 
 @app.context_processor
 def inject_user_profile():
