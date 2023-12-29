@@ -1,5 +1,5 @@
 import requests
-from flask import session
+from flask import session, url_for
 import time
 import json
 from .TokenExpiredError import TokenExpiredError
@@ -35,7 +35,7 @@ def get_playlists():
                     "name": item['name'],
                     "ap_id": None,
                     "public": item['public'],
-                    "image": None,
+                    "image": url_for('static', filename='default_playlist_image.png'),
                     "tracks_total": item['tracks']['total']
                 }
             playlists_dict[item['id']] = temp_dict
@@ -181,3 +181,10 @@ def clone_playlist(playlist_id):
                 raise TokenExpiredError()
             else:
                 raise
+            
+def reset_playlist(playlist_id):
+    ap_playlist_id = session['user_playlists'][playlist_id]['ap_id']
+    tracks = get_tracks(ap_playlist_id)
+    track_uris = [track['uri'] for track in tracks.values()]
+    remove_tracks_from_ap_playlist(playlist_id, track_uris)
+    clone_playlist(playlist_id)

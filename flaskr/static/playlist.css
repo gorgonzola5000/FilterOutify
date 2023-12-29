@@ -1,4 +1,4 @@
-.play-button {
+main button {
     background: none;
     border: none;
     border-radius: 50%;
@@ -7,4 +7,107 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: #1DB954;
+    color: #121212;
+}
+
+
+main .remove-track-button {
+    color: #a7a7a7;
+    background-color: transparent;
+    justify-self: end;
+}
+
+main .remove-track-button:hover {
+    color: #121212;
+    background-color: #a7a7a7;
+}
+
+main {
+    display: grid;
+    justify-items: center;
+}
+
+.track {
+    display: grid;
+    grid-template-columns: 1fr 2fr 2fr 1fr;
+    gap: 10px;
+    transition: background-color 0.5s ease, color 0.5s ease;
+    align-items: center;
+    padding-left: 5px;
+    padding-right: 20px;
+    width: 80%;
+    margin: auto;
+    border-radius: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.track form {
+    margin-left: auto;
+}
+
+.track:hover {
+    background-color: #2a2a2a;
+    border-radius: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.track img {
+    height: 75px;
+    width: 75px;
+    border-radius: 10px;
+}
+
+.track-title-track-artist > * {
+    margin: 2px;
+}
+
+.title {
+    color: white;
+    font-size: large;
+}
+
+.artist {
+    color: #a7a7a7;
+    font-size: small;
+}
+
+.playlist-cover {
+    height: 200px;
+    width: 200px;
+    border-radius: 10px;
+}
+
+.playlist-info {
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+    padding-bottom: 50px;
+    gap: 20px;
+}
+
+.playlist-info :nth-child(3) {
+    margin-left: auto;
+}
+
+.buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.filters form label {
+    color: white
+}
+
+.filters form select, .filters form input[type="submit"] {
+    color: #a7a7a7;
+    background-color: #2a2a2a;
+    border-radius: 5px;
+    border: none;
+}
+
+.filters form select:focus, .filters form input[type="submit"]:focus {
+    border: none;
 }

@@ -91,7 +91,7 @@ def index():
     if 'authorization_token' in session:
         return redirect(url_for('playlists'))
     else:
-        return render_template('about.html')
+        return redirect(url_for('about'))
 
 @app.route('/about')
 def about():
@@ -131,8 +131,8 @@ def playlist(playlist_id):
             artist_set.sort()
             return render_template('playlist.html', playlist_info=playlist_info, tracks=tracks, playlist_id=playlist_id, ap_playlist_id=ap_playlist_id, artists=artist_set)
         
-@app.route('/playlists/<playlist_id>/filter', methods=['POST'])
-def filter(playlist_id):
+@app.route('/playlists/<playlist_id>/filter_artist', methods=['POST'])
+def filter_artist(playlist_id):
     try:
         criteria = request.form.get('artist')
         tracks_to_be_filtered_out = autoplaylist_utils.filter_tracks(playlist_id, criteria)
@@ -142,7 +142,16 @@ def filter(playlist_id):
         return redirect(url_for('login'))
     return redirect(url_for('playlist', playlist_id=playlist_id))
 
-@app.route('/playlists/<playlist_id>/reset', methods=['PUT'])
+@app.route('/playlists/<playlist_id>/filter_track/<track_uri>', methods=['POST'])
+def filter_track(playlist_id, track_uri):
+    try:
+        autoplaylist_utils.remove_tracks_from_ap_playlist(playlist_id, tracks_to_be_filtered_out=[track_uri])
+    except TokenExpiredError:
+        session.clear()
+        return redirect(url_for('login'))
+    return redirect(url_for('playlist', playlist_id=playlist_id))
+
+@app.route('/playlists/<playlist_id>/reset', methods=['POST'])
 def reset(playlist_id):
     try:
         autoplaylist_utils.reset_playlist(playlist_id)

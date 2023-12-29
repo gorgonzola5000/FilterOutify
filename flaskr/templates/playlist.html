@@ -5,26 +5,50 @@
 
 
 {% block content %}
-
-<a href="https://open.spotify.com/playlist/{{ap_playlist_id}}" target="_blank">
-    <button class="play-button">
-        <span class="material-icons-outlined">play_arrow</span>
-    </button>
-</a>
-
-<form action="/playlists/{{playlist_id}}/filter" method="post">
-    <label for="artist">Artist:</label>
-    <select id="artist" name="artist">
-        {% for artist in artists %}
-            <option value="{{artist}}">{{artist}}</option>
-        {% endfor %}
-    </select>
-    <input type="submit" value="Filter">
-</form>
+<div class="playlist-info">
+    <img class="playlist-cover" src="{{playlist_info['image']}}" alt="Playlist cover">
+    <div>
+        <h1>{{playlist_info['name']}}</h1>
+        <div class="buttons">
+            <a href="https://open.spotify.com/playlist/{{ap_playlist_id}}" target="_blank">
+                <button class="play-button" title="Play">
+                    <span class="material-icons-outlined">play_arrow</span>
+                </button>
+            </a>
+            <form action="/playlists/{{playlist_id}}/reset" method="post">
+                <button class="reset-button" title="Cancel all the filters, repull all the songs">
+                    <span class="material-icons-outlined">refresh</span>
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="filters">
+        <h2>Filters</h2>
+        <form action="/playlists/{{playlist_id}}/filter_artist" method="post">
+            <label for="artist">Artist:</label>
+            <select id="artist" name="artist">
+                {% for artist in artists %}
+                    <option value="{{artist}}">{{artist}}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" value="Filter out">
+        </form>
+    </div>
+</div>
 
 {% for id, track in tracks.items() %}
 <div class="track">
-    <p>{{track['name']}} - {{track['artist']}}</p>
+    <img src="{{track['image']}}" alt="Album cover" height="50px">
+        <div class="track-title-track-artist">
+            <p class="title">{{track['name']}}</p>
+            <p class="artist">{{track['artist']}}</p>
+        </div>
+    <p>{{track['album']}}</p>
+    <form action="/playlists/{{playlist_id}}/filter_track/{{track['uri']}}" method="post">
+        <button class="remove-track-button">
+            <span class="material-icons-outlined">close</span>
+        </button>
+    </form>
 </div>
 {% endfor %}
 {% endblock %}

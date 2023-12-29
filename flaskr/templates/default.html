@@ -19,12 +19,12 @@
                     {% endif %}
                     <div id="user-details">
                         <p id="username">{{ profile.display_name }}</p>
-                        <button onclick="location.href='/logout'">Logout</button>
+                        <button id="login_logout" onclick="location.href='/logout'">Log out</button>
                     </div>
                 {% else %}
                     <div id="user-details">
                         <p>Not logged in</p>
-                        <button onclick="location.href='/login'">Login</button>
+                        <button id="login_logout" onclick="location.href='/login'">Log in</button>
                     </div>
                 {% endif %}
             </div>
