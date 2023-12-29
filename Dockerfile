@@ -1,6 +1,6 @@
 
 # Use an official Python runtime as a parent image
-FROM python:3.9-slim-buster
+FROM python:3.11-slim-buster
 
 # Set the working directory to /app
 WORKDIR /app
@@ -9,14 +9,18 @@ WORKDIR /app
 COPY . /app
 
 # Install any needed packages specified in requirements.txt
-RUN pip install --trusted-host pypi.python.org -r requirements.txt
+RUN pip install -r requirements.txt
 
 # Make port 80 available to the world outside this container
-EXPOSE 5000
+EXPOSE 80
 
 # Define environment variable
 ENV NAME World
 
 # Run the app when the container launches
 
-CMD ["flask", "--app", "flaskr", "run", "--debug", "--host=0.0.0.0"]
+# RUN chmod +x /app/gunicorn_config.py
+
+CMD ["gunicorn", "-c", "gunicorn_config.py", "flaskr:app"]
+
+# CMD ["flask", "--app", "flaskr", "run", "--debug", "--host=0.0.0.0"]
