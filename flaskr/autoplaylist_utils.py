@@ -80,13 +80,12 @@ def get_tracks(playlist_id):
                 "name": item['track']['name'],
                 "artist": item['track']['artists'][0]['name'],
                 "album": item['track']['album']['name'],
-                "image": item['track']['album']['images'][0]['url'],
+                "image": item['track']['album']['images'][0]['url'] if item['track']['album']['images'] else url_for('static', filename='default_track_image.jpg'),
                 "uri": item['track']['uri']
-                # "genres": item['track']['artists'][0]['genres']
             }
             tracks_dict[item['track']['id']] = temp_dict
         data['offset'] += 50
-        time.sleep(2)
+        time.sleep(1)
         if tracks_temp_json['next'] == None: # while tracks_temp['next'] != None, so while there are more pages of tracks
             break
     return tracks_dict
@@ -164,14 +163,15 @@ def clone_playlist(playlist_id):
     ap_playlist_id = session['user_playlists'][playlist_id]['ap_id']
     tracks = get_tracks(playlist_id)
     track_uris = [track['uri'] for track in tracks.values()]
+    filtered_track_uris = [uri for uri in track_uris if not uri.startswith('spotify:local:')]
 
-    for i in range(0, len(track_uris), 100):
+    for i in range(0, len(filtered_track_uris), 100):
         headers = {
             'Content-Type': 'application/json',
             'Authorization': f'Bearer {session["authorization_token"]}'
         }
         data = {
-            'uris': track_uris[i:i+100]
+            'uris': filtered_track_uris[i:i+100]
         }
         try:
             response = requests.post(f'https://api.spotify.com/v1/playlists/{ap_playlist_id}/tracks', headers=headers, data=json.dumps(data))

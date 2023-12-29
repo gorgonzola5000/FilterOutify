@@ -1,5 +1,6 @@
 import base64
 from flask import Flask, url_for, render_template, request, redirect, session
+from flask_session import Session
 import urllib.parse
 import secrets
 import requests
@@ -9,18 +10,25 @@ from .TokenExpiredError import TokenExpiredError
 import os
 
 app = Flask(__name__)
-app.debug = True
-# app.secret_key = dotenv.get_key(dotenv.find_dotenv(), 'SECRET_KEY')
+# Check Configuration section for more details
+app.config['SESSION_TYPE'] = 'filesystem'
+Session(app)
 
-# client_id = dotenv.get_key(dotenv.find_dotenv(), 'CLIENT_ID')
-# client_secret = dotenv.get_key(dotenv.find_dotenv(), 'CLIENT_SECRET')
-# redirect_uri = dotenv.get_key(dotenv.find_dotenv(), 'REDIRECT_URI')
+if dotenv.find_dotenv():
+    dotenv_file = dotenv.find_dotenv()
+    dotenv.load_dotenv(dotenv_file)
+    
+    app.secret_key = os.getenv('SECRET_KEY', dotenv.get_key(dotenv_file, 'SECRET_KEY'))
 
-app.secret_key = os.environ['SECRET_KEY']
+    client_id = os.getenv('CLIENT_ID', dotenv.get_key(dotenv_file, 'CLIENT_ID'))
+    client_secret = os.getenv('CLIENT_SECRET', dotenv.get_key(dotenv_file, 'CLIENT_SECRET'))
+    redirect_uri = os.getenv('REDIRECT_URI', dotenv.get_key(dotenv_file, 'REDIRECT_URI'))
+else:
+    app.secret_key = os.environ['SECRET_KEY']
 
-client_id = os.environ['CLIENT_ID']
-client_secret = os.environ['CLIENT_SECRET']
-redirect_uri = os.environ['REDIRECT_URI']
+    client_id = os.environ['CLIENT_ID']
+    client_secret = os.environ['CLIENT_SECRET']
+    redirect_uri = os.environ['REDIRECT_URI']
 
 @app.context_processor
 def inject_user_profile():

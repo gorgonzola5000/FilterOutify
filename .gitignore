@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Flask stuff
+flask_session/
+
 # Local development settings
 instance/
 .env
