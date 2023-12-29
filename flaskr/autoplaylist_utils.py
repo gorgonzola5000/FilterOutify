@@ -5,6 +5,9 @@ import json
 from .TokenExpiredError import TokenExpiredError
 
 def get_playlists():
+    if 'user_playlists' in session:
+        return session['user_playlists']
+    
     headers = {
     'Authorization': f'Bearer {session["authorization_token"]}'
     }
@@ -20,7 +23,7 @@ def get_playlists():
                 raise TokenExpiredError()
             else:
                 raise
-        response_json = response.json()  # get the page of playlists of the user
+        response_json = response.json()
         for item in response_json['items']:
             if item['images']:
                 temp_dict = {
@@ -28,7 +31,8 @@ def get_playlists():
                     "ap_id": None,
                     "public": item['public'],
                     "image": item['images'][0]['url'],
-                    "tracks_total": item['tracks']['total']
+                    "tracks_total": item['tracks']['total'],
+                    "tracks": None
                 }
             else:
                 temp_dict = {
@@ -36,7 +40,8 @@ def get_playlists():
                     "ap_id": None,
                     "public": item['public'],
                     "image": url_for('static', filename='default_playlist_image.png'),
-                    "tracks_total": item['tracks']['total']
+                    "tracks_total": item['tracks']['total'],
+                    "tracks": None
                 }
             playlists_dict[item['id']] = temp_dict
 
@@ -57,6 +62,9 @@ def get_playlists():
                     session['user_playlists'][key2]["ap_id"] = key
 
 def get_tracks(playlist_id):
+    if session['user_playlists'][playlist_id]['tracks']:
+        return session['user_playlists'][playlist_id]['tracks']
+    
     headers = {
         'Authorization': f'Bearer {session["authorization_token"]}'
     }
@@ -88,6 +96,8 @@ def get_tracks(playlist_id):
         time.sleep(1)
         if tracks_temp_json['next'] == None: # while tracks_temp['next'] != None, so while there are more pages of tracks
             break
+    session['user_playlists'][playlist_id]['tracks'] = tracks_dict
+    session.modified = True
     return tracks_dict
 
 def create_playlist(playlist_id):
@@ -152,18 +162,29 @@ def remove_tracks_from_ap_playlist(playlist_id, tracks_to_be_filtered_out):
             'tracks': [{'uri': uri} for uri in tracks_to_be_filtered_out[i:i+100]]
         }
         try:
-            requests.delete(f'https://api.spotify.com/v1/playlists/{ap_playlist_id}/tracks', headers=headers, data=json.dumps(data))
+            response = requests.delete(f'https://api.spotify.com/v1/playlists/{ap_playlist_id}/tracks', headers=headers, data=json.dumps(data))
+            response.raise_for_status()
         except requests.exceptions.HTTPError as err:
             if err.response.status_code == 401:
                 raise TokenExpiredError()
             else:
                 raise
+    # session['user_playlists'][ap_playlist_id]['tracks'] = [track for track in session['user_playlists'][ap_playlist_id]['tracks'] if track['uri'] not in tracks_to_be_filtered_out]
+    # session.modified = True
+    tracks = session['user_playlists'][ap_playlist_id]['tracks']
+    tracks_to_delete = [track_id for track_id, track_info in tracks.items() if track_info['uri'] in tracks_to_be_filtered_out]
 
+    for track_id in tracks_to_delete:
+        del session['user_playlists'][ap_playlist_id]['tracks'][track_id]
+        
+    session.modified = True
+    
 def clone_playlist(playlist_id):
     ap_playlist_id = session['user_playlists'][playlist_id]['ap_id']
     tracks = get_tracks(playlist_id)
     track_uris = [track['uri'] for track in tracks.values()]
     filtered_track_uris = [uri for uri in track_uris if not uri.startswith('spotify:local:')]
+    filtered_tracks = {track_id: track_info for track_id, track_info in tracks.items() if track_info['uri'] in filtered_track_uris}
 
     for i in range(0, len(filtered_track_uris), 100):
         headers = {
@@ -181,6 +202,9 @@ def clone_playlist(playlist_id):
                 raise TokenExpiredError()
             else:
                 raise
+    for track_id, track_info in filtered_tracks.items():
+        session['user_playlists'][ap_playlist_id]['tracks'][track_id] = track_info
+    session.modified = True
             
 def reset_playlist(playlist_id):
     ap_playlist_id = session['user_playlists'][playlist_id]['ap_id']
