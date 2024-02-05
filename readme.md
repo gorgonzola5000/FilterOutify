@@ -1,9 +1,19 @@
 ## FilterOutify
-It is a Docker container for filtering your public Spotify playlists.
+A web app built using Spotify Web API, Flask and Docker for filtering your public Spotify playlists.
 You can filter out:
 - all of the tracks of a specified artist
 - specific tracks
-#### Run using Docker Compose
+
+Docker Hub[https://hub.docker.com/repository/docker/gorgonzola5000/filteroutify/]
+
+## How to run
+
+- First, make a new project using Spotify Web API here[https://developer.spotify.com/dashboard]
+- Then, deploy the container:
+
+### Using Docker Compose
+
+- Make a Docker Compose File:
 ```
 version: "3.8"
 services:
@@ -21,9 +31,17 @@ services:
       - REDIRECT_URI=http://<your_server_ip_address>/callback
     restart: unless-stopped
 ```
-#### Tips
-- If you have a DNS server running, you should use the domain name pointing to the server running this app instead of hardcoding the IP address
-  As <your_server_ip_address> use the domain name pointing to the machine running this app
-  e.g. use your domain name "domain.example" as <your_server_ip_address>
+- Deploy the container using "docker compose up"
+
+or
+
+### Build from source
+1. Clone this repo
+2. CD into the cloned repo
+3. Build the image with "docker build -t <repository/name>:<tag> ." To learn more about image tags click here[https://docs.docker.com/engine/reference/commandline/image_build/#tag]
+4. Add a Docker Compose File and edit it using your newly created image, secrets and redirect_uri
+5. Deploy the container using "docker compose up"
+
+## Tips
 - If you want to access this app remotely, I recommend setting up a VPN access to your home network using Wireguard or Tailscale
 - If you decide to change the port, make sure to change it in Spotify Web API project settings, .env file and Docker run command or Docker Compose file
