@@ -4,11 +4,11 @@ You can filter out:
 - all of the tracks of a specified artist
 - specific tracks
 
-Docker Hub[https://hub.docker.com/repository/docker/gorgonzola5000/filteroutify/]
+[Docker Hub](https://hub.docker.com/repository/docker/gorgonzola5000/filteroutify/)
 
 ## How to run
 
-- First, make a new project using Spotify Web API here[https://developer.spotify.com/dashboard]
+- First, make a new project using Spotify Web API [here](https://developer.spotify.com/dashboard)
 - Then, deploy the container:
 
 ### Using Docker Compose
@@ -38,7 +38,7 @@ or
 ### Build from source
 1. Clone this repo
 2. CD into the cloned repo
-3. Build the image with "docker build -t <repository/name>:<tag> ." To learn more about image tags click here[https://docs.docker.com/engine/reference/commandline/image_build/#tag]
+3. Build the image with "docker build -t <repository/name>:<tag> ." To learn more about image tags click [here](https://docs.docker.com/engine/reference/commandline/image_build/#tag)
 4. Add a Docker Compose File and edit it using your newly created image, secrets and redirect_uri
 5. Deploy the container using "docker compose up"
 
