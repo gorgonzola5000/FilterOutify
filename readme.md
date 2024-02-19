@@ -4,6 +4,8 @@ You can filter out:
 - all of the tracks of a specified artist
 - specific tracks
 
+## A little showcase
+
 <p align="center">
   <img alt="playlists" src="./showcase_pictures/playlists.png" width="45%">
 &nbsp; &nbsp; &nbsp; &nbsp;
