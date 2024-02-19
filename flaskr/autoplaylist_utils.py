@@ -203,7 +203,11 @@ def clone_playlist(playlist_id):
             else:
                 raise
     for track_id, track_info in filtered_tracks.items():
-        session['user_playlists'][ap_playlist_id]['tracks'][track_id] = track_info
+        if ap_playlist_id not in session['user_playlists']:
+            session['user_playlists'][ap_playlist_id] = {'tracks': {}}
+
+        if track_id not in session['user_playlists'][ap_playlist_id]['tracks']:
+            session['user_playlists'][ap_playlist_id]['tracks'][track_id] = track_info
     session.modified = True
             
 def reset_playlist(playlist_id):
