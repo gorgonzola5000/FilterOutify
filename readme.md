@@ -4,6 +4,19 @@ You can filter out:
 - all of the tracks of a specified artist
 - specific tracks
 
+<p align="center">
+  <img alt="playlists" src="./showcase_pictures/playlists.png" width="45%">
+&nbsp; &nbsp; &nbsp; &nbsp;
+  <img alt="by_artist" src="./showcase_pictures/by_artist.png" width="45%">
+</p>
+
+## How it works
+- You log into Spotify and grant the app the necessary permissions. It then searches through all of your playlists to find public playlists and "worker" private playlists. "Worker" playlists are named "<your_public_playlist_name> AP". They are here so that FilterOutify doesn't mess with your actual playlists - filtering happens only in "worker" playlists.
+- To use FilterOutify, click a playlist you would like to filter. If there already is a "worker" playlist then just select the tracks or artists you would like to filter out and done!
+- If there is no "worker" playlist yet, you will be prompted to create one. If you decide to do so, a new "worker" playlist will be created with all* of the tracks of your selected playlist.
+
+all* - local files cannot be copied over. You are limited to songs available on Spotify
+
 [Docker Hub](https://hub.docker.com/repository/docker/gorgonzola5000/filteroutify/)
 
 ## How to run
